@@ -280,8 +280,11 @@ nakama-agents/
     └── skills/
         └── nakama-crew/                 # Skill delegasi Nami
             ├── SKILL.md                 # Prosedur: Task Card → delegate_task → verifikasi
-            ├── references/crew/         # Persona kru: franky, zoro, robin, usopp, sanji, jinbe
+            ├── references/
+            │   ├── crew/                # Persona kru: franky, zoro, robin, usopp, sanji, jinbe
+            │   └── workflows/           # Alur khusus, mis. module-intake.md
             ├── templates/
+            │   ├── context.md           # Template context project + "Aturan Proyek"
             │   ├── task-card.md
             │   ├── output-schema.json   # Dipakai sebagai output_schema delegate_task
             │   └── progress.md
@@ -326,3 +329,23 @@ Catatan: jika Nami mengedit skill sendiri, perubahannya masuk ke folder repo —
    ```
 3. Tambahkan konfigurasi `delegation` dari bagian 9 ke `~/.hermes/config.yaml`.
 4. Mulai sesi baru Hermes, lalu cek skill terbaca: `hermes skills list` (harus muncul `nakama-crew`).
+
+### Migrasi dari skill lama
+
+Jika `~/.hermes/skills/` masih berisi `strawhat-orchestration` atau `nakama-orchestration`,
+nonaktifkan keduanya supaya tidak bentrok dengan `nakama-crew`. Isinya sudah dipindahkan
+(lihat `legacy-skills/README.md`).
+
+```bash
+# 1. Cadangkan
+mkdir -p ~/hermes-skills-archive
+cp -R ~/.hermes/skills/strawhat-orchestration ~/.hermes/skills/nakama-orchestration ~/hermes-skills-archive/
+
+# 2. Nonaktifkan (atau lewat menu interaktif: hermes skills config)
+#    Perintah ini MENGGANTI seluruh daftar; sertakan skill lain yang sudah ada di skills.disabled.
+hermes config get skills.disabled
+hermes config set skills.disabled '["strawhat-orchestration", "nakama-orchestration"]'
+```
+
+`nakama-conventions` berada di dalam folder `nakama-orchestration`, jadi ikut nonaktif.
+Aturannya sudah ada di persona kru. Setelah beberapa hari stabil, folder skill lama boleh dihapus.

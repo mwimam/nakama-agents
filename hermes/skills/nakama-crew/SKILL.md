@@ -1,7 +1,7 @@
 ---
 name: nakama-crew
-description: Delegasikan task ke kru Nakama (Franky, Zoro, Robin, Usopp, Sanji, Jinbe) via delegate_task memakai Task Card, persona kru, dan output_schema, lalu verifikasi hasilnya di disk. Gunakan untuk setiap task engineering, kreatif, riset, QA, atau compliance.
-version: 1.0.0
+description: Orkestrasi kru Nakama oleh Nami. Delegasikan task ke Franky, Zoro, Robin, Usopp, Sanji, Jinbe via delegate_task memakai Task Card, persona kru, dan output_schema, lalu verifikasi hasilnya di disk. Gunakan setiap kali Luffy memanggil Nami untuk task engineering, kreatif, riset, QA, compliance, atau intake modul baru.
+version: 1.1.0
 platforms: [macos, linux]
 metadata:
   hermes:
@@ -19,8 +19,13 @@ review/QA, atau cek legal. Jangan dipakai untuk balasan chat biasa.
 ## Procedure
 
 1. **Tentukan project aktif.**
-   - Project ada di `~/Projects/<project>/`. Baca `context.md` dan `progress.md`.
+   - Project ada di `~/Projects/<project>/` (bukan `~/Documents/`). Repo legacy
+     boleh di-symlink ke `engineering/`. Baca `context.md`, `progress.md`, dan
+     `AGENTS.md` repo engineering.
+   - Catat bagian **"Aturan Proyek"** di `context.md`. Aturan itu wajib ikut ke
+     setiap Task Card project ini (langkah 4).
    - Project baru → buat struktur folder sesuai README (bagian 4), salin
+     `${HERMES_SKILL_DIR}/templates/context.md` dan
      `${HERMES_SKILL_DIR}/templates/progress.md` ke root project.
    - Permintaan ad-hoc → pakai `~/Projects/_scratch/` (buat jika belum ada).
 
@@ -37,7 +42,7 @@ review/QA, atau cek legal. Jangan dipakai untuk balasan chat biasa.
    - `context`, susun dengan urutan ini:
      1. Isi lengkap file persona kru.
      2. Task Card lengkap.
-     3. Ringkasan `context.md` yang relevan (bukan seluruh file kalau panjang).
+     3. Bagian "Aturan Proyek" dari `context.md` (utuh) + ringkasan bagian lain yang relevan.
      4. Untuk Franky/Zoro: isi `AGENTS.md` dari folder `engineering/` project.
      5. Path absolut root project dan path file input yang perlu dibaca.
    - `output_schema`: isi `${HERMES_SKILL_DIR}/templates/output-schema.json`.
@@ -45,10 +50,27 @@ review/QA, atau cek legal. Jangan dipakai untuk balasan chat biasa.
 5. **Verification Gate** (lihat bagian di bawah). Jangan lewati.
 
 6. **Tutup task.**
-   - Lolos → update `progress.md`, salin hasil final ke `deliverables/` jika
+   - Lolos → update `progress.md` **dengan patch** (jangan overwrite; Luffy/agent lain
+     juga menulis di sana, dan `write_file` ke file yang sudah ada akan ditolak
+     kalau belum di-read), salin hasil final ke `deliverables/` jika
      memang deliverable untuk Luffy, lalu lapor dengan format di SOUL.md.
    - Gagal → kirim ulang ke kru yang sama dengan feedback spesifik
      (apa yang salah + bukti). Maksimal 3x per task, lalu eskalasi ke Luffy.
+
+## Aturan Tetap Luffy
+
+Berlaku di semua project, kecuali "Aturan Proyek" di `context.md` menyatakan lain.
+
+- **Flowchart = kebenaran proses bisnis.** Jika flowchart dan Figma/mockup
+  bertentangan: flowchart menang untuk logika bisnis (approval, transisi status,
+  aktor), Figma menang untuk tampilan UI (kolom, tombol, layout). Catat perbedaan
+  di spec dengan label jelas, bukan sebagai pertanyaan terbuka.
+- **Modul baru FE+BE:** ikuti `${HERMES_SKILL_DIR}/references/workflows/module-intake.md`.
+  FE = slicing pakai komponen yang sudah ada; komponen yang belum ada dibuat
+  **plan dulu**. BE = riset + spec + technical design dulu, belum koding.
+  Eksekusi kode baru setelah Luffy menyetujui.
+- **Aturan khusus project** (berlaku hanya di satu project) ditulis ke `context.md`
+  atau `AGENTS.md` project itu, **bukan** ke skill ini dan bukan sebagai skill global baru.
 
 ## Routing
 
@@ -60,9 +82,11 @@ review/QA, atau cek legal. Jangan dipakai untuk balasan chat biasa.
 | Gambar, logo, poster, aset iklan, potong video       | Usopp  |
 | Riset pasar, kompetitor, harga, berita, scraping     | Sanji  |
 | Lisensi, Terms of Service, regulasi, risiko bisnis   | Jinbe  |
+| Intake modul baru FE+BE dari dokumen SA              | Lihat `references/workflows/module-intake.md` |
 
 Alur standar perubahan kode: **Franky → Zoro**. Kode belum dianggap selesai
-sebelum Zoro memberi status SUCCESS.
+sebelum Zoro memberi verdict `APPROVE` (status `SUCCESS`). Verdict
+`REQUEST CHANGES` → kirim temuan Zoro ke Franky sebagai Task Card perbaikan.
 
 ## Verification Gate
 
@@ -94,4 +118,7 @@ Baru setelah semua lolos, task boleh ditandai selesai.
   `delegation.worktree_isolation: true`.
 - Jangan masukkan seluruh isi file besar ke `context`. Beri path-nya, kru bisa membacanya sendiri.
 - Kru tidak bisa bertanya ke Luffy (`clarify` diblokir). Kalau Task Card ambigu,
-  perjelas dulu sebelum delegasi.
+  perjelas dulu sebelum delegasi. Kru yang butuh input Luffy (mis. Sanji kena
+  CAPTCHA) akan kembali dengan `BLOCKED` — Nami yang meneruskan pertanyaannya.
+- Subagent yang riset terlalu lama tanpa menulis file (>15 menit) → steer dengan
+  deadline eksplisit. Cek dulu subagent masih hidup sebelum steer.

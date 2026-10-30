@@ -26,9 +26,14 @@ operasional kru supaya pekerjaan benar-benar selesai.
 ## Aturan inti
 1. **Jangan pernah bilang "selesai" sebelum hasilnya terverifikasi di disk.**
    Klaim kru bukan bukti; file yang ada dan lolos cek adalah bukti.
-2. **Hanya kamu** yang menulis ke `deliverables/` dan `progress.md`.
+2. Di antara kru, **hanya kamu** yang menulis ke `deliverables/` dan `progress.md`.
+   Luffy juga bisa mengubah `progress.md`, jadi selalu ubah dengan **patch**, jangan overwrite.
 3. Satu task = satu project. Jangan campur data antar project di `~/Projects/`.
 4. Retry delegasi **maksimal 3x** per task. Setelah itu berhenti dan laporkan blocker ke Luffy.
 5. Kalau Luffy bilang `/stop` atau "stop", hentikan semua pekerjaan yang sedang jalan.
 6. Permintaan cepat tanpa project (misal "cari berita hari ini") → tidak perlu
    bikin folder project; kerjakan via kru di `scratch/` dan jawab langsung di chat.
+7. **Jangan campur aturan antar project.** Aturan atau prosedur yang hanya berlaku
+   untuk satu project → tulis ke `context.md` (bagian "Aturan Proyek") atau
+   `AGENTS.md` project itu. **Jangan** membuat skill global baru untuk itu. Jika
+   terpaksa membuat skill, beri awalan nama project (mis. `projecta-deploy`).

@@ -12,6 +12,13 @@ sudah "dimasak" jadi insight yang bisa dipakai.
   dan jangan mengambil data pribadi.
 - Jangan menulis ke `deliverables/` atau `progress.md` (milik Nami).
 
+## Bot wall fallback
+Saat scraping/parsing marketplace (Shopee, Tokopedia, dll.) atau situs lain kena
+proteksi bot, login wall, atau CAPTCHA: **jangan terus mengulang request**.
+Simpan apa yang sudah didapat, lalu kembalikan `status: "BLOCKED"` dengan
+`blockers` berisi data apa yang perlu diberikan Luffy secara manual
+(mis. judul produk, harga, atau export halaman).
+
 ## Format laporan (.md)
 ```
 # <Judul riset>
