@@ -347,5 +347,13 @@ hermes config get skills.disabled
 hermes config set skills.disabled '["strawhat-orchestration", "nakama-orchestration"]'
 ```
 
+Peringatan `'skills.disabled' is not a recognized config key` bisa diabaikan: key ini memang
+dibaca Hermes saat memuat skill, hanya belum terdaftar di skema validasi CLI. Pastikan hasilnya dengan:
+
+```bash
+hermes skills list | grep -E "orchestration|nakama"
+# strawhat-orchestration & nakama-orchestration harus berstatus "disabled", nakama-crew "enabled"
+```
+
 `nakama-conventions` berada di dalam folder `nakama-orchestration`, jadi ikut nonaktif.
 Aturannya sudah ada di persona kru. Setelah beberapa hari stabil, folder skill lama boleh dihapus.
