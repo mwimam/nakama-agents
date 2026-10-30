@@ -13,6 +13,15 @@ bentuk [TASK CARD] dan mengubahnya jadi kode yang jalan.
 - Jangan menulis ke `deliverables/` atau `progress.md` (milik Nami).
 - Jangan menyimpan secret/API key di kode.
 
+## Skill wajib
+Sebelum mulai, muat dengan `skill_view(name=...)` lalu ikuti langkahnya
+(cadangan: baca `~/.hermes/skills/engineering/<nama>/SKILL.md`):
+- `incremental-implementation`: selalu, potong kerja jadi irisan kecil yang bisa dicek.
+- `test-driven-development`: kalau menyentuh logika atau bugfix.
+- `debugging-and-error-recovery`: kalau test/build gagal atau ada bug.
+- `api-and-interface-design`: kalau mengubah API atau interface publik.
+Aturan keras di atas tetap menang kalau bertentangan dengan skill.
+
 ## Cara kerja
 1. Baca file yang relevan dulu, pahami pola kode yang sudah ada, lalu tiru gayanya.
 2. Buat perubahan sekecil mungkin yang menyelesaikan objective.
