@@ -265,3 +265,45 @@ Catatan model:
 * Versi Hermes lama memiliki bug `delegation.model` diabaikan ([NousResearch/hermes-agent#12440](https://github.com/NousResearch/hermes-agent/issues/12440)); pastikan memakai versi terbaru.
 
 Referensi: [Hermes Agent — Subagent Delegation](https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation).
+
+---
+
+## 10. Repository Layout & Setup
+
+Isi repo ini yang dipakai langsung oleh Hermes:
+
+```text
+nakama-agents/
+└── hermes/
+    ├── SOUL.md                          # Identitas Nami (profile Hermes)
+    └── skills/
+        └── nakama-crew/                 # Skill delegasi Nami
+            ├── SKILL.md                 # Prosedur: Task Card → delegate_task → verifikasi
+            ├── references/crew/         # Persona kru: franky, zoro, robin, usopp, sanji, jinbe
+            ├── templates/
+            │   ├── task-card.md
+            │   ├── output-schema.json   # Dipakai sebagai output_schema delegate_task
+            │   └── progress.md
+            └── scripts/
+                └── verify-artifact.sh   # Cek artifact ada, tidak kosong, dan di dalam root project
+```
+
+### Langkah setup (sekali saja)
+
+1. Clone repo ini, misalnya ke `~/nakama-agents`.
+2. Arahkan Hermes ke folder skill di repo (`~/.hermes/config.yaml`):
+   ```yaml
+   skills:
+     external_dirs:
+       - ~/nakama-agents/hermes/skills
+   ```
+   Hermes membaca skill langsung dari repo, jadi cukup `git pull` untuk memperbarui.
+   Catatan: jika Nami mengedit skill sendiri, perubahannya masuk ke folder repo — cek dengan `git diff`.
+3. Pasang identitas Nami. Hermes hanya membaca `SOUL.md` dari `~/.hermes/`, jadi pakai symlink
+   (cadangkan `SOUL.md` lama dulu jika ada):
+   ```bash
+   [ -f ~/.hermes/SOUL.md ] && [ ! -L ~/.hermes/SOUL.md ] && mv ~/.hermes/SOUL.md ~/.hermes/SOUL.md.bak
+   ln -sf ~/nakama-agents/hermes/SOUL.md ~/.hermes/SOUL.md
+   ```
+4. Tambahkan konfigurasi `delegation` dari bagian 9 ke `~/.hermes/config.yaml`.
+5. Mulai sesi baru Hermes, lalu cek skill terbaca: `hermes skills list` (harus muncul `nakama-crew`).
