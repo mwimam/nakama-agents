@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "properties": {
+    "agent": {
+      "type": "string",
+      "description": "Nama kru: Franky, Zoro, Robin, Usopp, Sanji, atau Jinbe"
+    },
+    "status": {
+      "enum": ["SUCCESS", "FAILED", "BLOCKED"]
+    },
+    "task": {
+      "type": "string",
+      "description": "Judul singkat task"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Path absolut setiap file yang dibuat/diubah"
+    },
+    "verification": {
+      "type": "string",
+      "description": "Perintah verifikasi yang dijalankan dan hasilnya"
+    },
+    "summary": {
+      "type": "string",
+      "description": "1-3 kalimat apa yang dikerjakan"
+    },
+    "blockers": {
+      "type": ["string", "null"],
+      "description": "Apa yang menghalangi, atau null"
+    }
+  },
+  "required": ["agent", "status", "artifacts", "verification"]
+}

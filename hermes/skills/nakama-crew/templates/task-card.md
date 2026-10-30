@@ -1,0 +1,12 @@
+[TASK CARD]
+- WORKER: <Franky | Zoro | Robin | Usopp | Sanji | Jinbe>
+- PROJECT ROOT: ~/Projects/<project>
+- TARGET PATH: ~/Projects/<project>/<dept>/<target>
+- INPUT FILES: <path file yang perlu dibaca, atau "-">
+- PROBLEM / OBJECTIVE: <satu tujuan yang jelas dan terukur>
+- CONSTRAINTS:
+  - Hanya ubah/tulis file di dalam TARGET PATH
+  - <aturan AGENTS.md / brand guideline / batasan teknis>
+  - YAGNI, diff minimal
+- VERIFICATION CRITERIA:
+  - <perintah cek, mis. `php -l app/Foo.php`, `npm test`, file ada > 0 bytes>
