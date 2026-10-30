@@ -274,6 +274,7 @@ Isi repo ini yang dipakai langsung oleh Hermes:
 
 ```text
 nakama-agents/
+├── install.sh                           # Setup otomatis ke Hermes
 └── hermes/
     ├── SOUL.md                          # Identitas Nami (profile Hermes)
     └── skills/
@@ -288,22 +289,40 @@ nakama-agents/
                 └── verify-artifact.sh   # Cek artifact ada, tidak kosong, dan di dalam root project
 ```
 
-### Langkah setup (sekali saja)
+### Setup cepat (disarankan)
 
-1. Clone repo ini, misalnya ke `~/nakama-agents`.
-2. Arahkan Hermes ke folder skill di repo (`~/.hermes/config.yaml`):
+```bash
+git clone https://github.com/mwimam/nakama-agents.git ~/nakama-agents
+cd ~/nakama-agents
+./install.sh --dry-run   # lihat dulu apa yang akan diubah
+./install.sh
+```
+
+`install.sh` aman dijalankan berulang kali. Yang dilakukan:
+1. Menambahkan `~/nakama-agents/hermes/skills` ke `skills.external_dirs` lewat `hermes config set`
+   (entri lain yang sudah ada tetap dipertahankan).
+2. Memasang `hermes/SOUL.md` sebagai `~/.hermes/SOUL.md` (symlink). `SOUL.md` lama dicadangkan
+   ke `SOUL.md.bak.<tanggal>`.
+3. Mengecek `nakama-crew` muncul di `hermes skills list`.
+
+Setelah itu tinggal: atur model kru di bagian `delegation` (lihat bagian 9), lalu restart gateway/sesi Hermes.
+
+Hermes membaca skill langsung dari repo, jadi cukup `git pull` untuk memperbarui.
+Catatan: jika Nami mengedit skill sendiri, perubahannya masuk ke folder repo — cek dengan `git diff`.
+
+### Setup manual
+
+1. Tambahkan ke `~/.hermes/config.yaml`:
    ```yaml
    skills:
      external_dirs:
        - ~/nakama-agents/hermes/skills
    ```
-   Hermes membaca skill langsung dari repo, jadi cukup `git pull` untuk memperbarui.
-   Catatan: jika Nami mengedit skill sendiri, perubahannya masuk ke folder repo — cek dengan `git diff`.
-3. Pasang identitas Nami. Hermes hanya membaca `SOUL.md` dari `~/.hermes/`, jadi pakai symlink
+2. Pasang identitas Nami. Hermes hanya membaca `SOUL.md` dari `~/.hermes/`, jadi pakai symlink
    (cadangkan `SOUL.md` lama dulu jika ada):
    ```bash
    [ -f ~/.hermes/SOUL.md ] && [ ! -L ~/.hermes/SOUL.md ] && mv ~/.hermes/SOUL.md ~/.hermes/SOUL.md.bak
    ln -sf ~/nakama-agents/hermes/SOUL.md ~/.hermes/SOUL.md
    ```
-4. Tambahkan konfigurasi `delegation` dari bagian 9 ke `~/.hermes/config.yaml`.
-5. Mulai sesi baru Hermes, lalu cek skill terbaca: `hermes skills list` (harus muncul `nakama-crew`).
+3. Tambahkan konfigurasi `delegation` dari bagian 9 ke `~/.hermes/config.yaml`.
+4. Mulai sesi baru Hermes, lalu cek skill terbaca: `hermes skills list` (harus muncul `nakama-crew`).
