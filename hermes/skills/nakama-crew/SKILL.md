@@ -35,7 +35,7 @@ review/QA, atau cek legal. Jangan dipakai untuk balasan chat biasa.
 4. **Franky dan Zoro = profile Hermes** (bukan subagent). Panggil lewat skrip,
    bukan `delegate_task`:
    ```bash
-   bash /Users/imams/Documents/nakama-agents/hermes/skills/nakama-crew/scripts/run-crew.sh \
+   bash ${HERMES_SKILL_DIR}/scripts/run-crew.sh \
      <franky|zoro> <task-card.md> <repo-dir> [file-konteks...]
    ```
    - Persona sudah ada di `~/.hermes/profiles/<kru>/SOUL.md`; tidak perlu ditempel.
