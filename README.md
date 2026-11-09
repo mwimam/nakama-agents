@@ -352,6 +352,7 @@ claude-code/
 | `output_schema` | Blok JSON di akhir jawaban kru, divalidasi Nami |
 | `delegation.worktree_isolation` | Franky membuat worktree sendiri di `<project>/worktree/<repo>-<slug>` |
 | Zoro read-only via persona + cek git | Sama, ditambah tool `Edit`/`Write` diblokir lewat `disallowedTools` |
+| Verifikasi `php -l` / test | Tiga level test wajib: unit, integration (HTTP → DB), dan E2E. Untuk E2E, Franky menjalankan app dari worktree (port unik per worktree), menguji API dengan `curl` dan UI dengan Claude in Chrome. Zoro menilai kecukupan test dan mengulang semuanya secara independen |
 
 ### Setup
 

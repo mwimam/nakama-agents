@@ -54,7 +54,16 @@ Jangan pakai parameter `isolation`. Franky membuat worktree-nya sendiri di `<roo
   - Commit: <ya, setelah Zoro PASS | tidak>  — aturan pesan commit dari AGENTS.md
 - VERIFICATION CRITERIA:
   - <perintah dari AGENTS.md, mis. lint/syntax check/test>
+- TEST:
+  - UNIT: <logika yang wajib di-unit-test>
+  - INTEGRATION: <endpoint/alur yang wajib di-integration-test>
+  - Perintah dan pola: <dari bagian Testing AGENTS.md>
+- E2E:
+  - SETUP: <perintah menjalankan app dari worktree, dari AGENTS.md, dengan PORT terisi>
+  - PORTS: <mis. BE 8101, FE 3101>   — unik per worktree yang jalan bersamaan
+  - SKENARIO: <langkah per acceptance criteria, termasuk satu skenario negatif>
 ```
+Alokasikan PORT berbeda untuk setiap worktree yang berjalan paralel. Jika BE dan FE satu fitur dites bersama, FE diarahkan ke PORT BE yang sama.
 Kru mulai dari percakapan kosong. Tulis path absolut dan isi yang dibutuhkan; jangan menulis "file tadi" atau "seperti dibahas".
 
 ## Output contract kru
@@ -71,7 +80,8 @@ Jangan hanya percaya teks `verification` dari kru. Untuk setiap hasil:
 3. Jalankan `git -C <worktree> status --short` dan `git -C <worktree> diff --stat <base>...HEAD`. Jika ada file berubah di luar TARGET PATH, task gagal.
 4. Catat `git status` worktree sebelum Zoro mulai. Jika ada perubahan sesudahnya, review ditolak: kembalikan perubahannya dan laporkan ke Luffy.
 5. Jika satu repo mengubah field atau response, cek dampaknya ke repo lain.
-6. Hal yang belum teruji (DB mati, lint gagal) dilaporkan jujur ke Luffy.
+6. Wajib ada bukti tiga level test dari Franky: **unit** (logika baru dan bugfix), **integration** (setiap endpoint yang berubah), dan **E2E** (setiap perubahan API atau UI). Jalankan ulang sendiri unit dan integration test-nya. E2E juga harus diulang oleh Zoro. Level yang hilang tanpa alasan yang masuk akal berarti task belum selesai, kecuali Luffy menyetujui pengecualian.
+7. Hal yang belum teruji (DB mati, lint gagal, tool browser tidak tersedia) dilaporkan jujur ke Luffy.
 
 ## Aturan keras
 - **Jangan push, buat MR/PR, atau ubah status ticket** tanpa konfirmasi eksplisit Luffy.

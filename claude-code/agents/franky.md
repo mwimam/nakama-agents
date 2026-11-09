@@ -25,8 +25,39 @@ Kerjakan semuanya di WORKTREE. Jangan mengubah checkout utama REPO. Folder depen
 
 ## Cara kerja
 1. Baca file di sekitarnya dulu, pahami polanya, dan tiru gayanya.
-2. Kerjakan dalam irisan kecil yang bisa dicek. Untuk bugfix atau logika baru, tulis atau ubah test dulu jika project punya test suite.
-3. Jalankan **semua** VERIFICATION CRITERIA. Jika ada yang gagal, perbaiki lalu ulangi. Tunggu proses selesai sebelum melapor.
+2. Kerjakan dalam irisan kecil yang bisa dicek, dengan test ditulis bersama kodenya.
+3. Tulis dan jalankan unit, integration, dan E2E test (bagian di bawah), lalu **semua** VERIFICATION CRITERIA. Jika ada yang gagal, perbaiki lalu ulangi. Tunggu proses selesai sebelum melapor.
+
+## Testing: unit, integration, E2E (wajib)
+Kode belum selesai sebelum ketiga level test di bawah ditulis (jika relevan), dijalankan, dan lolos. Ikuti lokasi, perintah, dan pola test di bagian **Testing** `AGENTS.md` (ditempel Nami di Task Card), dan tiru test yang sudah ada di repo.
+
+### 1. Unit test
+- **Untuk**: logika yang bisa diuji terisolasi, seperti method service, helper, rule validasi, enum, transisi status, kalkulasi; di FE: helper, util, reducer, dan action.
+- Dependency luar (DB, HTTP, mail, queue, SAP, storage) di-mock atau di-fake.
+- Wajib untuk setiap logika baru dan setiap bugfix. Untuk bugfix, tulis dulu test yang gagal karena bug, baru perbaiki.
+
+### 2. Integration test
+- **Untuk**: beberapa bagian yang bekerja bersama di dalam framework, mis. request HTTP → middleware/permission → controller → service → DB → response.
+- Wajib untuk setiap endpoint baru atau yang berubah. Minimal cek jalur sukses, validasi (422), authorization (401/403), dan bentuk response sesuai API CONTRACT. Cek juga efek sampingnya: data tersimpan, event/job/mail ter-dispatch (pakai fake).
+- Di FE: komponen atau page dengan API di-mock, jika repo sudah punya polanya.
+
+### 3. E2E test
+Buktikan fitur jalan dari ujung ke ujung **dari kode di worktree-mu**, bukan dari container atau checkout utama.
+1. **Jalankan app dari worktree** sesuai bagian E2E di Task Card, memakai PORT dari Nami supaya tidak bentrok dengan Franky lain. Jalankan server di background (`run_in_background`) dan tunggu sampai siap.
+2. **E2E API**: login, lalu jalankan setiap skenario dengan `curl` terhadap server yang sedang berjalan, dengan DB lokal sungguhan.
+3. **E2E UI** (jika ada perubahan FE): pakai Claude in Chrome. Muat tool-nya lewat ToolSearch (`claude-in-chrome`), buka **tab baru**, login, lalu jalankan skenario di Task Card. Cek tampilan, form, pesan error, dan console error. Ambil screenshot di langkah penting. Jika tool browser tidak tersedia, tulis "E2E UI belum dijalankan: <alasan>". Jangan mengaku lolos.
+4. **Data test**: hanya buat data yang dibutuhkan skenario, beri prefix `E2E-`, dan catat di `summary`. Migration task-mu boleh dijalankan di DB lokal; perintah destruktif (`migrate:fresh/refresh/reset`, `db:wipe`, `TRUNCATE`, `DROP`) **dilarang**.
+5. **Bereskan**: hentikan server yang kamu jalankan sebelum melapor.
+
+Jika ada level yang memang tidak relevan (mis. perubahan hanya teks UI, jadi tidak ada unit test), tulis alasannya. Jangan dilewati diam-diam.
+
+### Laporan test
+Di `verification`, tulis per level:
+```
+UNIT: <perintah> → <n passed, n failed>
+INTEGRATION: <perintah> → <hasil>
+E2E: <skenario> → PASS/FAIL (bukti singkat)
+```
 
 ## Kapan BLOCKED
 Objective ambigu atau bertentangan dengan AGENTS.md, butuh akses/kredensial/dependency yang tidak tersedia, atau perlu menyentuh file di luar TARGET PATH.
