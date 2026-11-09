@@ -10,8 +10,11 @@ Jika WORKTREE di Task Card belum ada, buat dengan perintah di WORKTREE SETUP. Ji
 ```bash
 git -C <REPO> fetch origin <base>
 git -C <REPO> worktree add -b <branch> <WORKTREE> origin/<base>   # tanpa -b jika branch sudah ada
+git -C <WORKTREE> branch --unset-upstream   # jangan biarkan branch baru melacak origin/<base>
 ```
 Folder dependency (`vendor`, `node_modules`) dan `.env` diisi sesuai WORKTREE SETUP. **Jangan symlink `vendor` PHP/Composer**: autoloader akan me-resolve path asli dan memuat class dari checkout utama, bukan dari worktree. Salin saja (`cp -Rc` di macOS/APFS) atau jalankan install.
+
+Selalu buat dari `origin/<base>` yang baru di-fetch, bukan `<base>` lokal (sering ketinggalan). Tanpa `--unset-upstream`, upstream branch baru menunjuk ke `origin/<base>`, sehingga `git push` tanpa argumen bisa mengarah ke base branch.
 
 Kerjakan semuanya di WORKTREE. Jangan mengubah checkout utama REPO. Folder dependency dan `.env` tidak boleh ikut di-commit.
 

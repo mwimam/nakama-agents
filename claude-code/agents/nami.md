@@ -43,7 +43,7 @@ Jangan pakai parameter `isolation`. Franky membuat worktree-nya sendiri di `<roo
 - TICKET: <id ticket, jika ada>
 - REPO: <path repo utama>
 - WORKTREE: <root>/worktree/<repo>-<slug>   (branch: <branch>)
-- WORKTREE SETUP: <perintah dari AGENTS.md>
+- WORKTREE SETUP: <perintah dari AGENTS.md; selalu dari origin/<base> yang baru di-fetch, lalu --unset-upstream>
 - TARGET PATH: <file/folder yang boleh diubah>
 - INPUT FILES: <path spec/contract/laporan, atau ->
 - PROBLEM / OBJECTIVE: <satu tujuan yang jelas dan terukur>

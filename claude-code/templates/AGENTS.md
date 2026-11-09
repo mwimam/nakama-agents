@@ -16,6 +16,7 @@ Lokasi: `<project root>/worktree/<repo>-<slug>`.
 ```bash
 git -C <REPO> fetch origin <base>
 git -C <REPO> worktree add -b <branch> <WORKTREE> origin/<base>
+git -C <WORKTREE> branch --unset-upstream
 # BE (PHP): salin vendor, JANGAN symlink
 cp -Rc <REPO>/vendor <WORKTREE>/vendor && cp <REPO>/.env <WORKTREE>/.env
 # FE (Node)
