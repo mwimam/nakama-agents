@@ -326,3 +326,47 @@ Catatan: jika Nami mengedit skill sendiri, perubahannya masuk ke folder repo —
    ```
 3. Tambahkan konfigurasi `delegation` dari bagian 9 ke `~/.hermes/config.yaml`.
 4. Mulai sesi baru Hermes, lalu cek skill terbaca: `hermes skills list` (harus muncul `nakama-crew`).
+
+---
+
+## 11. Versi Claude Code
+
+Kru yang sama juga bisa dijalankan di [Claude Code](https://claude.com/claude-code) tanpa Hermes. Nami menjadi thread utama, sedangkan Robin, Franky, dan Zoro menjadi subagent. Workspace project tetap sama (`~/Projects/<project>/`), jadi Hermes dan Claude Code bisa bergantian mengerjakan project yang sama dengan `progress.md` yang sama.
+
+```text
+claude-code/
+├── install.sh              # Pasang kru ke satu workspace (per project, bukan global)
+├── agents/
+│   ├── nami.md             # Koordinator (thread utama): Task Card, delegasi paralel, verification gate
+│   ├── robin.md            # Senior analis/PM: acceptance criteria, API contract, pembagian task
+│   ├── franky.md           # Senior engineer: implementasi di git worktree sendiri
+│   └── zoro.md             # Senior QA & security, read-only
+└── templates/
+    └── AGENTS.md           # Guardrail teknis project (repo, worktree, verifikasi, aturan commit)
+```
+
+| Hermes | Claude Code |
+| :--- | :--- |
+| Profile Nami + `SOUL.md` | `claude --agent nami` |
+| `delegate_task` / `run-crew.sh` | Agent tool (subagent), paralel dalam satu pesan |
+| `output_schema` | Blok JSON di akhir jawaban kru, divalidasi Nami |
+| `delegation.worktree_isolation` | Franky membuat worktree sendiri di `<project>/worktree/<repo>-<slug>` |
+| Zoro read-only via persona + cek git | Sama, ditambah tool `Edit`/`Write` diblokir lewat `disallowedTools` |
+
+### Setup
+
+```bash
+# <workspace-dir>: folder tempat menjalankan Claude (mis. folder induk repo BE + FE)
+# <project-root>: project root Nakama
+~/nakama-agents/claude-code/install.sh --dry-run <workspace-dir> ~/Projects/<project>
+~/nakama-agents/claude-code/install.sh <workspace-dir> ~/Projects/<project>
+
+cd <workspace-dir> && claude --agent nami
+```
+
+`install.sh` membuat symlink agent ke `<workspace-dir>/.claude/agents/` (jadi cukup `git pull` untuk update), menulis `<workspace-dir>/.claude/nakama-project` berisi path project root, dan menyalin `templates/AGENTS.md` ke `<project-root>/engineering/AGENTS.md` jika belum ada. Isi file itu dengan detail project: repo, base branch, cara setup worktree, perintah verifikasi, aturan commit, dan file sensitif.
+
+Catatan:
+* Agent dipasang per workspace, bukan di `~/.claude/agents` (global), supaya kru hanya aktif di project yang dimaksud.
+* Jangan symlink `vendor` PHP ke worktree: autoloader Composer akan memuat class dari checkout utama. Salin (`cp -Rc`) atau jalankan `composer install`.
+* Subagent Claude Code tidak bisa memanggil subagent lain, jadi Nami harus berjalan sebagai thread utama (`--agent nami`), bukan dipanggil sebagai subagent.
