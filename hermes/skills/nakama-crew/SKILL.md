@@ -16,6 +16,13 @@ metadata:
 Setiap permintaan Luffy yang butuh kerja nyata: kode, tulisan, visual, riset,
 review/QA, atau cek legal. Jangan dipakai untuk balasan chat biasa.
 
+Skill ini milik Hermes: bergantung pada `delegate_task` dan profile `hermes -p`.
+Claude Code CLI tidak memuat skill Hermes. Padanannya ada di folder `claude-code/`
+repo ini (agent nami, robin, franky, zoro; pasang per workspace dengan
+`claude-code/install.sh`, lihat README bagian 11). Kedua sisi berbagi workspace
+`~/Projects/<project>/` (`progress.md`, `research/`, `worktree/`) dan membaca aturan
+teknis yang sama di `engineering/AGENTS.md`, jadi konvensi repo ditulis di sana.
+
 ## Procedure
 
 1. **Tentukan project aktif.**
@@ -41,6 +48,8 @@ review/QA, atau cek legal. Jangan dipakai untuk balasan chat biasa.
    - Persona sudah ada di `~/.hermes/profiles/<kru>/SOUL.md`; tidak perlu ditempel.
    - Simpan Task Card ke file dulu (mis. `~/Projects/<project>/scratch/<task>.md`) dan
      sertakan `AGENTS.md`/`context.md` relevan sebagai file-konteks.
+   - Task kode: TARGET PATH = worktree terpisah dari base yang baru di-fetch
+     (`git fetch origin <base>` lalu `git worktree add -b <branch> ~/Projects/<project>/worktree/<nama> origin/<base>`, lalu `git branch --unset-upstream`). Jangan branch dari `<base>` lokal dan jangan kerja langsung di repo utama: base lokal sering ketinggalan puluhan commit, dan Luffy menegur kalau worktree tidak dibuat.
    - Franky memakai model `coding`. Zoro tool `file` mati; skrip membandingkan
      `git status`/`git diff` sebelum-sesudah. Beda = exit 3 `ZORO-VIOLATION`: review
      ditolak, kembalikan perubahan, laporkan ke Luffy.
@@ -92,11 +101,24 @@ Baru setelah semua lolos, task boleh ditandai selesai.
 ## Siklus fix-review (kode)
 Untuk perbaikan hasil review: Franky fix (Task Card: baca laporan Zoro, hanya severity yang diminta, **jangan commit/push**) → Nami verifikasi sendiri (`git diff --stat`, `php -l`/lint, `route:list`, cek dampak ke sisi lain, mis. FE memakai field yang diubah BE) → Zoro review ulang diff **yang belum di-commit** (Task Card menyebut itu) → hanya PASS: Nami commit + push. Merge/MR request dibuat Luffy sendiri. FAIL: kirim balik ke Franky, maks 3x. Repo berbeda (BE vs FE) boleh jalan paralel; repo sama jangan.
 
+Review branch lokal yang sudah di-commit tapi belum di-push: Zoro review `git diff origin/<base>...<branch>` di repo utama (read-only). FAIL → cocokkan tiap temuan high ke kode (`git show origin/<base>:<file>`) dulu, lalu worktree fix dari branch itu (`git worktree add -b <branch>-fix ~/Projects/<project>/worktree/<nama> <branch>`) supaya repo utama tetap bersih. PASS ulang → commit di worktree, `git merge --ff-only <branch>-fix` di branch asli, push, hapus worktree + branch fix. Simpan kedua laporan Zoro (awal + ulang) ke `research/`.
+
+Task read-only paralel (inventaris/scan oleh Franky, review oleh Zoro) boleh jalan bersamaan di repo yang sama selama tidak ada yang menulis ke repo; simpan `git status --porcelain` baseline di `scratch/` sebelum launch.
+
+Verifikasi deliverable berbentuk tabel besar (inventaris file:baris): parse baris tabel dengan Python, cocokkan total per kategori dengan ringkasan, dan buka setiap `file:baris` di repo untuk memastikan konstruksi yang disebut memang ada di baris itu. Regex baris harus menerima penanda tebal (`| **P1** ...`), kalau tidak baris prioritas tidak terhitung dan totalnya tampak tidak cocok.
+
 ## Pitfalls
 - **Franky/Zoro = profile Hermes; Robin/Usopp/Sanji/Jinbe = subagent (file persona saja, tanpa memori/config).** Hasil bisa beda antar jalan, jadi aturan gaya & konvensi repo ditulis di `context.md`/`AGENTS.md` project, bukan diharap diingat kru. Pembuatan/ubah profile: `references/crew-profiles.md`.
-- **`run-crew.sh` untuk review/kode besar lewat 10 menit**: jalan sebagai proses latar (batas foreground 600 dtk). Arahkan stdout/stderr ke file di `scratch/`, tunggu notifikasi selesai, lalu parse blok ```json terakhir. Exit 3 = repo berubah; cek `git status` repo asli dulu sebelum menuduh Zoro (alarm palsu muncul bila path relatif).
-- **Output Franky/Zoro dari `run-crew.sh` tidak selalu satu blok ```json bersih** (bisa ada log diff/tool di depan). Ambil dari `rfind('{"agent"')` sampai sebelum `session_id:`, `json.loads`, lalu simpan `summary` Zoro ke `research/` (Zoro tidak menulis file). Task Card Franky/Zoro wajib menyebut batas severity dan larangan commit supaya scope tidak melebar.
+- **`run-crew.sh` untuk review/kode besar lewat 10 menit**: jalan sebagai proses latar dengan `persist_on_release=true` (batas foreground 600 dtk). Tanpa persist, proses latar kena `SIGTERM` (exit -15) saat sesi di-interupsi/compact, sisakan log 0-byte dan `git status` bersih — seolah kru belum jalan padahal cuma ke-kill. Arahkan stdout/stderr ke file di `scratch/`, tunggu notifikasi selesai, lalu parse blok ```json terakhir. Exit 3 = repo berubah; cek `git status` repo asli dulu sebelum menuduh Zoro (alarm palsu muncul bila path relatif). Deteksi ke-kill: log kosong + `git status` bersih + exit -15 = proses mati sebelum menulis apa pun; re-run dengan `persist_on_release=true`, jangan mengira kru selesai.
+- **Kru exit cepat (exit 1, tanpa JSON)**: grep log untuk `Provider said` / `HTTP 4xx/5xx` sebelum menyalahkan task-nya. Penyebab umumnya semua entri combo `coding` mati (token OAuth kedaluwarsa, kuota/saldo habis). Tes PONG tiap entri combo satu per satu (resep di skill `9router`; balasan streaming `data: {...chat.completion.chunk...}` = sukses, bukan error parse), laporkan tabel status per entri ke Luffy. Jangan ganti model profile atau mengalihkan kerja ke subagent sendiri: Luffy memilih tetap pakai combo `coding` dan memperbaiki akunnya. Setelah dia bilang beres, PONG ulang lalu re-run (log lama di-rename `*.failN.log`).
+- **Kru exit 130 (SIGINT) dan tool terminal Nami sendiri ikut balas 130 / "orphan recovery"**: itu interupsi dari sesi/Luffy, bukan error perintah. Berhenti mencoba setelah 2x gagal, laporkan apa yang sudah terlihat + daftar sisa yang belum dicek (proses `serve` yang masih jalan, file token/kredensial yang ditulis kru, `git status` vs baseline, data uji yang tertinggal), lalu tanya Luffy mau lanjut atau tidak. Kalau lanjut: bereskan sisa itu dulu, baru re-run.
+- **Luffy tanya "proses apa yang jalan / bisa lanjut?" saat kru masih jalan**: jawab dari disk, bukan tebakan. Cek `ps -p <pid> -o etime`, anak proses (`pgrep -P`), `ls -lt` output terbaru, diff file vs backup, dan hitungan di DB, lalu laporkan tabel tahap (selesai / sedang / belum). Kondisi sementara yang wajar (mis. view 0 setelah DROP DATABASE) dijelaskan supaya tidak dikira rusak. `run-crew.sh` di folder non-git mencetak bantuan `git diff` ke log; itu noise, bukan error.
+- **Output Franky/Zoro dari `run-crew.sh` tidak selalu satu blok ```json bersih** (bisa ada log diff/tool di depan, dan JSON bisa pretty-printed `{\n  "agent"` sehingga `rfind('{"agent"')` meleset). Cari `i = s.rfind('"agent"')`, lalu `s.rfind('{', 0, i)` sampai sebelum `session_id:`, buang ``` sisa, `json.loads`, lalu simpan `summary` Zoro ke `research/` (Zoro tidak menulis file). Task Card Franky/Zoro wajib menyebut batas severity dan larangan commit supaya scope tidak melebar.
+- **Verifikasi Nami mencakup seluruh sistem, bukan cuma scope kru**: kru melapor "semua cocok" hanya untuk bagian yang dia sentuh (mis. 8 dari 10 DB), padahal bagian lain bisa sudah rusak/kosong sejak sebelumnya. Cek ulang semua (mis. row count seluruh DB) sebelum menandai selesai.
 - **Klaim `verification` kru bukan bukti**: jalankan ulang `php -l`/`route:list`/`git status` sendiri. Catatan kru soal hal yang tidak teruji (DB mati, eslint gagal) diteruskan jujur ke Luffy.
+- **Baca temuan/asumsi di `summary` kru sebelum lanjut review**: SUCCESS bisa untuk target yang salah (mis. model yang dipakai ternyata memetakan tabel lain, atau mekanisme yang tak pernah terpanggil). Cek asumsi itu ke source (DB/kode) dulu; kalau scope ternyata berubah, bawa ke Luffy sebelum kirim ke Zoro.
+- **Task data/DB di luar repo git** (mis. converter + import di `scratch/`): `run-crew.sh` tetap jalan untuk Franky (cek git jadi no-op). Sebelum launch, Nami simpan baseline sendiri (jumlah tabel/view, backup file yang akan diubah) di `scratch/`, supaya verifikasi punya pembanding sebelum-sesudah.
+- **Luffy membatalkan task yang sudah/sedang dikerjakan kru**: hentikan prosesnya, hapus worktree + branch-nya (`git worktree remove --force` lalu `git branch -D`), simpan bahan sumber yang berguna sebagai referensi serah-terima, tandai di `progress.md` sebagai dilewati (alasan + siapa yang nanti mengerjakan). Jangan biarkan artefak setengah jadi tanpa status.
 - **Edit persona kru = dua salinan**: ubah `references/crew/<kru>.md` lalu `cp` ke `~/.hermes/profiles/<kru>/SOUL.md` (untuk Franky/Zoro); cek `diff -q`. Kalau tidak, profile jalan dengan persona lama.
 - **Pertanyaan "siapa yang mengerjakan X"**: tidak ada alat pencari riwayat sesi. Jawab dari `progress.md` (entri `[x] Kru: ...`) + header dokumen (`Penulis:`) di `research/` project, dan sebut bahwa itu inferensi dari file.
 - **Subagent tidak tahu apa-apa** selain `goal` + `context`. Jangan menulis
